@@ -1,7 +1,7 @@
 import http.server
 import json
 import socketserver
-
+import logging
 import cv2
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
@@ -68,9 +68,6 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 
         # Writing the HTML contents with UTF-8
         self.wfile.write(bytes(html, "utf8"))
-        self._set_response(200)
-
-
 
     def do_POST(self):
         #very basic system. http get is the html start up page
@@ -100,18 +97,29 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         # Writing the HTML contents with UTF-8
         self.wfile.write(bytes(html, "utf8"))
 
-        self._set_response(200)
 
 
 # Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+def run(port=8080):
+    logging.basicConfig(level=logging.INFO)
+
     # Create an object of the above class
     #handler_object = MyHttpRequestHandler
     handler_object = WebRequestHandler
-    PORT = 8002
-    my_server = socketserver.TCPServer(("", PORT), handler_object)
-
+    my_server = socketserver.TCPServer(("", port), handler_object)
+    logging.info('Starting httpd...\n')
     # Star the server
-    my_server.serve_forever()
+    try:
+        my_server.serve_forever()
+    except KeyboardInterrupt:
+        my_server.server_close()
+        logging.info('Stopping httpd...\n')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+if __name__ == '__main__':
+    from sys import argv
+
+    if len(argv) == 2:
+        run(port=int(argv[1]))
+    else:
+        run()
